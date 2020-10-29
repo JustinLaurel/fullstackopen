@@ -28,6 +28,24 @@ const Languages = ({ country }) => {
 }
 
 const Country = ({ country }) => {
+  const weatherSkeleton = {
+    temperature: '',
+    weather_icons: '',
+    wind_speed: '',
+    wind_dir: '',    
+  }
+  const [weather, setWeather] = useState(Object.assign({}, weatherSkeleton))
+
+  const fetchWeather = (capitalName) => () => {
+    axios
+      .get(`http://api.weatherstack.com/current?access_key=${process.env.REACT_APP_API_KEY}&query=${capitalName}`)
+      .then(response => {
+        setWeather(response.data.current)
+      })
+  }
+
+  useEffect(fetchWeather(country.capital), [])
+
   return (
     <div>
       <h1>{country.name}</h1> <br />
@@ -35,8 +53,13 @@ const Country = ({ country }) => {
       <p>capital {country.capital}</p>
       <p>population {country.population}</p> <br />
 
-      <h2>languages</h2>
+      <h2>Spoken languages</h2>
       <Languages country={country} />
+      
+      <h2>Weather in {country.capital}</h2>
+      <p><b>temperature:</b> {weather.temperature} Celcius</p>
+      <img src={weather.weather_icons} /> <br />
+      <p><b>wind:</b> {weather.wind_speed} mph direction {weather.wind_dir}</p>
 
       <img src={country.flag} alt={country.name} height='200px' width='300px'/>
     </div>
@@ -50,7 +73,7 @@ const Button = ({ onClick, text, className }) => {
 }
 
 
-const Countries = ({ countries, countriesToShow, setToShow }) => {
+const Countries = ({ countries, countriesToShow, setToShow }) => {  
   const getCountryNames = countries => {
     if (countries.length === 0) return []
     const names = []
@@ -174,7 +197,11 @@ const App = () => {
   return(
     <div>
       <Search value={searchQuery} onChange={handleSearchChange}/>
-      <Countries countries={countriesQueried} countriesToShow={countriesToShow} setToShow={setToShow}/>
+      <Countries 
+        countries={countriesQueried} 
+        countriesToShow={countriesToShow} 
+        setToShow={setToShow} 
+      />
     </div>
   )
 }
