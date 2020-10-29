@@ -43,8 +43,83 @@ const Country = ({ country }) => {
   )
 }
 
-const Countries = ({ countries }) => {
+const Button = ({ onClick, text, className }) => {
+  return (
+    <button onClick={onClick} className={className}>{text}</button>
+  )
+}
+
+
+const Countries = ({ countries, countriesToShow, setToShow }) => {
+  const getCountryNames = countries => {
+    if (countries.length === 0) return []
+    const names = []
+
+    countries.forEach(country => {
+      names.push(country.name)
+    })
+
+    return names
+  }
+
+  const getListOfCountries = () => {
+    const countryElements = []
+    const countryToShowNames = getCountryNames(countriesToShow)
+
+    countries.forEach(country => {
+      let countryName = country.name
+      if (countryToShowNames.includes(countryName)) {
+        countryElements.push(
+          <li key={country.alpha3Code}>
+            {countryName} 
+            <Button onClick={handleToggleCountry} text='show' className={countryName}/>
+            <Country country={country} />
+          </li>
+        )
+      } else {
+        countryElements.push(
+          <li key={country.alpha3Code}>
+            {countryName} 
+            <Button onClick={handleToggleCountry} text='show' className={countryName}/>
+          </li>
+        )
+      }
+    })
+
+    return countryElements
+  }
+
+  const handleToggleCountry = event => {
+    const button = event.currentTarget
+    const countryName = event.currentTarget.className
+
+    if (button.textContent === 'show') {
+      const newToShow = countries.filter(country => {
+        return country.name === countryName
+      })
+
+      setToShow(countriesToShow.concat(newToShow))
+      button.textContent = 'hide'
+    } 
+    else if (button.textContent === 'hide') {
+      hideCountry(countryName)
+      button.textContent = 'show'
+    }
+  }
+
+  const hideCountry = countryName => {
+    const newToShow = countriesToShow.filter(country => {
+      return country.name !== countryName
+    })
+
+    setToShow(newToShow)
+  }
+
   switch (true) {
+    case countries.length === 1:
+      const country = countries[0]
+      return <Country country={country} />
+    
     case countries.length > 10:
       return (
         <div>
@@ -57,17 +132,8 @@ const Countries = ({ countries }) => {
         <div></div>
       )
 
-    case countries.length === 1:
-      const country = countries[0]
-      return <Country country={country} />
-    
     case countries.length > 0 && countries.length <= 10:
-      const countryNames = []
-      countries.forEach(country => {
-        countryNames.push(<li key={country.alpha3Code}>{country.name}</li>)
-      })
-
-      return <ul>{countryNames}</ul>
+      return <ul>{getListOfCountries(countries, countriesToShow)}</ul>
 
     default:
       return <p>Failed to load</p>
@@ -77,6 +143,7 @@ const Countries = ({ countries }) => {
 
 const App = () => {
   const [countries, setCountries] = useState([])
+  const [countriesQueried, setQueried] = useState([])
   const [countriesToShow, setToShow] = useState([])
 
   const [searchQuery, setQuery] = useState('')
@@ -100,13 +167,14 @@ const App = () => {
         queriedCountries.push(country)
       }
     })
-    setToShow(queriedCountries)
+    setQueried(queriedCountries)
+    setToShow([])
   }
 
   return(
     <div>
       <Search value={searchQuery} onChange={handleSearchChange}/>
-      <Countries countries={countriesToShow}/>
+      <Countries countries={countriesQueried} countriesToShow={countriesToShow} setToShow={setToShow}/>
     </div>
   )
 }
