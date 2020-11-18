@@ -7,8 +7,10 @@ const getPersons = () => {
 }
 
 const update = (id, newObj) => {
+    console.log('update called, from frontend fetcher.js')
     return axios.put(baseUrl + '/' + id, newObj)
         .then(response => response.data)
+        .catch(err => console.error(err))
 }
 
 const create = newObj => {
